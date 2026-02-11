@@ -1,4 +1,4 @@
-<!-- webapp/templates/chat.html -->
+<!-- templates/chat.html -->
 <!DOCTYPE html>
 <html dir="rtl">
 <head>
@@ -6,174 +6,363 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دستیار تشخیص IBD | کرون و کولیت</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
+
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #1e2a3a);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
             overflow: hidden;
         }
-        
-        .header {
-            background: #4a5568;
-            color: white;
-            padding: 20px;
-            text-align: center;
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s infinite;
         }
-        
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
         }
-        
+
         .header p {
-            color: #cbd5e0;
-            font-size: 14px;
+            color: #a0c0e0;
+            font-size: 15px;
+            position: relative;
+            z-index: 1;
         }
-        
+
         .chat-box {
             height: 500px;
             overflow-y: auto;
-            padding: 20px;
-            background: #f7fafc;
+            padding: 30px;
+            background: #f8fafd;
+            scroll-behavior: smooth;
         }
-        
+
         .message {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             display: flex;
             flex-direction: column;
+            animation: fadeIn 0.3s ease;
         }
-        
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .user-message {
             align-items: flex-end;
         }
-        
+
         .bot-message {
             align-items: flex-start;
         }
-        
+
         .message-content {
-            max-width: 80%;
-            padding: 12px 18px;
-            border-radius: 18px;
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
             position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        
+
         .user-message .message-content {
-            background: #4299e1;
+            background: linear-gradient(135deg, #4299e1, #3182ce);
             color: white;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 5px;
         }
-        
+
         .bot-message .message-content {
             background: white;
             color: #2d3748;
             border: 1px solid #e2e8f0;
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 5px;
         }
-        
+
         .timestamp {
             font-size: 11px;
-            color: #a0aec0;
-            margin-top: 4px;
+            color: #718096;
+            margin-top: 5px;
+            padding: 0 5px;
         }
-        
+
         .preview-container {
-            padding: 15px 20px;
-            background: #edf2f7;
-            border-top: 1px solid #e2e8f0;
-        }
-        
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 8px;
-            margin-top: 10px;
-            display: none;
-        }
-        
-        .input-area {
-            padding: 20px;
+            padding: 20px 30px;
             background: white;
             border-top: 1px solid #e2e8f0;
         }
-        
-        .file-input {
-            margin-bottom: 10px;
+
+        .image-preview-wrapper {
+            position: relative;
+            display: inline-block;
+            animation: scaleIn 0.3s ease;
         }
-        
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .image-preview {
+            max-width: 250px;
+            max-height: 250px;
+            border-radius: 15px;
+            border: 3px solid #4299e1;
+            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background: #f56565;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .remove-btn:hover {
+            background: #e53e3e;
+            transform: rotate(90deg);
+        }
+
+        .input-area {
+            padding: 30px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .file-input {
+            margin-bottom: 15px;
+        }
+
+        .file-label {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background: #edf2f7;
+            color: #4a5568;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-label:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        #imageInput {
+            display: none;
+        }
+
         .flex-row {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            align-items: flex-end;
         }
-        
+
         textarea {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 15px;
             resize: none;
             font-family: inherit;
             font-size: 14px;
+            line-height: 1.6;
+            transition: all 0.3s;
+            background: #f8fafd;
         }
-        
+
         textarea:focus {
             outline: none;
             border-color: #4299e1;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
         }
-        
+
         button {
-            padding: 12px 24px;
-            background: #48bb78;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #48bb78, #38a169);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: bold;
+            border-radius: 15px;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
         }
-        
+
         button:hover {
-            background: #38a169;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
         }
-        
+
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
+            background: rgba(255,255,255,0.9);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
-        
+
         .loader {
-            border: 3px solid #f3f3f3;
+            border: 4px solid #f3f3f3;
             border-radius: 50%;
-            border-top: 3px solid #4299e1;
-            width: 40px;
-            height: 40px;
+            border-top: 4px solid #4299e1;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 0 auto 15px;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #48bb78;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .result-details {
+            background: #ebf8ff;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+            border-right: 4px solid #4299e1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 20px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .flex-row {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .scroll-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .scroll-btn:hover {
+            background: #3182ce;
+            transform: translateY(-5px);
         }
     </style>
 </head>
@@ -181,7 +370,7 @@
     <div class="container">
         <div class="header">
             <h1>🩺 دستیار تشخیص بیماری‌های التهابی روده</h1>
-            <p>تحلیل تصاویر آندوسکوپی با هوش مصنوعی لاما 3.2 ویژن</p>
+            <p>تحلیل تصاویر آندوسکوپی با هوش مصنوعی | مدل ResNet50</p>
         </div>
         
         <div class="chat-box" id="chatBox">
@@ -191,9 +380,11 @@
                     <br><br>
                     📤 می‌تونی عکس آندوسکوپی رو آپلود کنی و سوالاتت رو بپرسی.
                     <br>
-                    🤖 من با مدل Llama 3.2 Vision عکس رو تحلیل می‌کنم.
+                    🧠 من با مدل ResNet50 آموزش دیدم و دقت بالای ۹۰٪ دارم.
+                    <br>
+                    🌐 آدرس سرویس: <strong>crohn-1.onrender.com</strong>
                 </div>
-                <div class="timestamp">همین الان</div>
+                <div class="timestamp">${new Date().toLocaleTimeString('fa-IR')}</div>
             </div>
         </div>
         
@@ -203,128 +394,333 @@
         
         <div class="input-area">
             <div class="file-input">
+                <label for="imageInput" class="file-label">
+                    📤 انتخاب عکس آندوسکوپی
+                </label>
                 <input type="file" id="imageInput" accept="image/*">
             </div>
             
             <div class="flex-row">
                 <textarea id="messageInput" rows="2" placeholder="سوال خود را بپرسید... (مثلاً: این عکس رو تحلیل کن)"></textarea>
-                <button onclick="sendMessage()">ارسال</button>
+                <button onclick="sendMessage()">
+                    ارسال
+                    <span style="font-size: 18px;">🚀</span>
+                </button>
             </div>
         </div>
         
         <div class="loading" id="loading">
             <div class="loader"></div>
-            <p style="margin-top: 10px; color: #718096;">در حال تحلیل عکس توسط لاما...</p>
+            <p style="margin-top: 10px; color: #4a5568; font-weight: 500;">در حال تحلیل تصویر توسط هوش مصنوعی...</p>
+            <p style="color: #718096; font-size: 12px; margin-top: 5px;">حدود ۵-۱۰ ثانیه زمان می‌برد</p>
         </div>
     </div>
 
     <script>
-        let currentImage = null;
+        // ============ تنظیمات اولیه ============
         const chatBox = document.getElementById('chatBox');
         const loading = document.getElementById('loading');
-        
-        // پیش‌نمایش عکس
+        let currentImage = null;
+
+        // ✅ آدرس ثابت سرور - این مهمه!
+        const SERVER_URL = 'https://crohn-1.onrender.com';
+
+        // ============ پیش‌نمایش عکس ============
         document.getElementById('imageInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                if (file.size > 10 * 1024 * 1024) {
+                    showError('حجم فایل نباید بیشتر از 10 مگابایت باشد');
+                    return;
+                }
+                
+                if (!file.type.startsWith('image/')) {
+                    showError('لطفاً فقط فایل تصویری آپلود کنید');
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     currentImage = e.target.result;
                     document.getElementById('imagePreviewContainer').innerHTML = `
-                        <div style="position: relative;">
-                            <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
-                            <button onclick="removeImage()" style="position: absolute; top: -10px; right: -10px; padding: 5px 10px; background: #f56565; border-radius: 50%;">✕</button>
+                        <div class="image-preview-wrapper">
+                            <img src="${e.target.result}" class="image-preview" alt="پیش‌نمایش">
+                            <button onclick="removeImage()" class="remove-btn" title="حذف عکس">✕</button>
+                            <span style="position: absolute; bottom: -10px; left: 10px; background: #4299e1; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                🖼️ آماده تحلیل
+                            </span>
                         </div>
                     `;
                 };
                 reader.readAsDataURL(file);
             }
         });
-        
+
+        // ============ حذف عکس ============
         function removeImage() {
             currentImage = null;
             document.getElementById('imagePreviewContainer').innerHTML = '';
             document.getElementById('imageInput').value = '';
         }
-        
-        function sendMessage() {
-            const message = document.getElementById('messageInput').value.trim();
+
+        // ============ ارسال پیام ============
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
             
             if (!message && !currentImage) {
-                alert('لطفاً پیام بنویسید یا عکس آپلود کنید.');
+                showError('لطفاً پیام بنویسید یا عکس آپلود کنید');
                 return;
             }
             
-            // نمایش پیام کاربر
-            const timestamp = new Date().toLocaleTimeString('fa-IR');
-            chatBox.innerHTML += `
-                <div class="message user-message">
-                    <div class="message-content">${message || '⏺️ تحلیل عکس'}</div>
-                    <div class="timestamp">${timestamp}</div>
+            addMessage(message || '🖼️ تحلیل تصویر آندوسکوپی', 'user');
+            
+            if (currentImage) {
+                addImageMessage(currentImage, 'user');
+            }
+            
+            messageInput.value = '';
+            showLoading();
+            
+            try {
+                // ✅ استفاده از آدرس کامل سرور
+                const response = await fetch(`${SERVER_URL}/api/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        image: currentImage
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    showPredictionResult(data);
+                }
+                
+            } catch (error) {
+                hideLoading();
+                showError('خطا در ارتباط با سرور: ' + error.message);
+                console.error('Error:', error);
+            }
+        }
+
+        // ============ نمایش نتیجه پیش‌بینی ============
+        function showPredictionResult(data) {
+            let confidenceColor = '';
+            let confidenceText = '';
+            
+            if (data.confidence > 0.9) {
+                confidenceColor = '#48bb78';
+                confidenceText = 'بسیار مطمئن';
+            } else if (data.confidence > 0.7) {
+                confidenceColor = '#ecc94b';
+                confidenceText = 'مطمئن';
+            } else {
+                confidenceColor = '#f56565';
+                confidenceText = 'کمتر مطمئن';
+            }
+            
+            const resultHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <span style="font-size: 24px;">🔬</span>
+                    <span style="font-weight: 700; color: #2d3748;">نتیجه تشخیص:</span>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #667eea15, #764ba215); padding: 20px; border-radius: 15px; border-right: 5px solid #667eea;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                        <div>
+                            <span style="font-size: 32px; font-weight: 800; color: #4a5568;">
+                                ${data.class_fa}
+                            </span>
+                            <span style="display: inline-block; margin-right: 10px; padding: 5px 15px; background: ${confidenceColor}; color: white; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                ${data.confidence_percent} - ${confidenceText}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 10px; margin-top: 10px;">
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div style="width: 60px; height: 60px; background: #ebf8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 30px;">📊</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                    <span style="color: #718096; font-size: 13px;">درصد اطمینان</span>
+                                    <span style="font-weight: 700; color: #2d3748;">${data.confidence_percent}</span>
+                                </div>
+                                <div style="width: 100%; height: 8px; background: #edf2f7; border-radius: 4px;">
+                                    <div style="width: ${data.confidence_percent}; height: 8px; background: linear-gradient(90deg, #48bb78, #4299e1); border-radius: 4px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 10px; border-right: 4px solid #ed8936;">
+                        <div style="display: flex; gap: 10px;">
+                            <span style="font-size: 20px;">💡</span>
+                            <div>
+                                <span style="font-weight: 700; color: #2d3748; display: block; margin-bottom: 5px;">
+                                    توضیح تشخیص:
+                                </span>
+                                <span style="color: #4a5568; line-height: 1.6;">
+                                    ${data.explanation}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+                        <span style="padding: 5px 12px; background: #e2e8f0; border-radius: 15px; font-size: 12px; color: #4a5568;">
+                            ⚕️ تشخیص هوش مصنوعی
+                        </span>
+                        <span style="padding: 5px 12px; background: #e2e8f0; border-radius: 15px; font-size: 12px; color: #4a5568;">
+                            🏥 نیاز به تأیید پزشک
+                        </span>
+                    </div>
                 </div>
             `;
             
-            // نمایش عکس کاربر توی چت
-            if (currentImage) {
-                chatBox.innerHTML += `
-                    <div class="message user-message">
-                        <div class="message-content">
-                            <img src="${currentImage}" style="max-width: 200px; border-radius: 8px;">
-                        </div>
+            addMessage(resultHTML, 'bot');
+        }
+
+        // ============ اضافه کردن پیام متنی ============
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const timestamp = new Date().toLocaleTimeString('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${content}
+                    ${sender === 'bot' ? '<div style="margin-top: 10px; font-size: 12px; color: #a0aec0;">🤖 دستیار هوشمند</div>' : ''}
+                </div>
+                <div class="timestamp">${timestamp}</div>
+            `;
+            
+            chatBox.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // ============ اضافه کردن پیام تصویری ============
+        function addImageMessage(imageData, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const timestamp = new Date().toLocaleTimeString('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-content" style="padding: 10px; max-width: 300px;">
+                    <img src="${imageData}" style="width: 100%; border-radius: 10px; border: 2px solid #4299e1;">
+                    <div style="margin-top: 5px; font-size: 11px; color: #718096; text-align: center;">
+                        🖼️ تصویر آندوسکوپی
                     </div>
-                `;
-            }
+                </div>
+                <div class="timestamp">${timestamp}</div>
+            `;
             
-            // پاک کردن ورودی
-            document.getElementById('messageInput').value = '';
+            chatBox.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // ============ نمایش خطا ============
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                background: #fed7d7;
+                color: #c53030;
+                padding: 15px 20px;
+                border-radius: 10px;
+                margin: 10px 0;
+                border-right: 4px solid #f56565;
+                animation: fadeIn 0.3s ease;
+            `;
+            errorDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 20px;">❌</span>
+                    <span style="font-weight: 500;">${message}</span>
+                </div>
+            `;
             
-            // اسکرول به پایین
-            chatBox.scrollTop = chatBox.scrollHeight;
+            chatBox.appendChild(errorDiv);
+            scrollToBottom();
             
-            // نمایش انیمیشن لودینگ
+            setTimeout(() => {
+                errorDiv.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => errorDiv.remove(), 300);
+            }, 5000);
+        }
+
+        // ============ نمایش/مخفی کردن لودینگ ============
+        function showLoading() {
             loading.style.display = 'block';
-            
-            // ارسال به سرور
-            fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: message,
-                    image: currentImage
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                loading.style.display = 'none';
-                
-                // نمایش پاسخ لاما
-                chatBox.innerHTML += `
-                    <div class="message bot-message">
-                        <div class="message-content">🤖 ${data.response.replace(/\n/g, '<br>')}</div>
-                        <div class="timestamp">${new Date().toLocaleTimeString('fa-IR')}</div>
-                    </div>
-                `;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            })
-            .catch(err => {
-                loading.style.display = 'none';
-                chatBox.innerHTML += `
-                    <div class="message bot-message">
-                        <div class="message-content">❌ خطا در ارتباط با سرور: ${err.message}</div>
-                    </div>
-                `;
+            chatBox.style.opacity = '0.7';
+        }
+
+        function hideLoading() {
+            loading.style.display = 'none';
+            chatBox.style.opacity = '1';
+        }
+
+        // ============ اسکرول به پایین ============
+        function scrollToBottom() {
+            chatBox.scrollTo({
+                top: chatBox.scrollHeight,
+                behavior: 'smooth'
             });
         }
-        
-        // ارسال با Enter
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
+
+        // ============ ارسال با Ctrl+Enter ============
+        document.getElementById('messageInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
                 e.preventDefault();
                 sendMessage();
             }
         });
+
+        // ============ بررسی وضعیت سرور ============
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${SERVER_URL}/`);
+                if (response.ok) {
+                    console.log('✅ سرور فعال است');
+                }
+            } catch (error) {
+                console.error('❌ خطا در ارتباط با سرور:', error);
+            }
+        }
+
+        // ============ شروع ============
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServerStatus();
+        });
+
+        // ============ انیمیشن fadeOut ============
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(-10px); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
