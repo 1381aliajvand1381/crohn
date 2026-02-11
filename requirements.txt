@@ -1,19 +1,18 @@
 # ============ Core ============
-flask==2.3.3
-gunicorn==21.2.0          # ✅ ضروری برای Render
-python-dotenv==1.0.0      # ✅ برای مدیریت环境变量
+flask>=2.3.0,<3.0.0
+gunicorn>=21.0.0
+python-dotenv>=1.0.0
 
-# ============ PyTorch (CUDA 11.8) ============
---index-url https://download.pytorch.org/whl/cu118
-torch==2.7.1+cu118
-torchvision==0.22.1+cu118
-torchaudio==2.7.1+cu118   # ✅ اختیاری
+# ============ PyTorch (CPU version for Render) ============
+--index-url https://download.pytorch.org/whl/cpu
+torch==2.7.1+cpu
+torchvision==0.22.1+cpu
+torchaudio==2.7.1+cpu
 
 # ============ Image Processing ============
-pillow==10.1.0
-numpy==1.24.3
-opencv-python-headless==4.8.1.78  # ✅ سبک برای سرور
+pillow>=10.0.0
+numpy>=1.24.0
 
 # ============ Utilities ============
-requests==2.31.0
-tqdm==4.66.1
+requests>=2.31.0
+gdown>=5.0.0
