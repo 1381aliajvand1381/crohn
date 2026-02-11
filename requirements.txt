@@ -1,18 +1,11 @@
-# ============ Core ============
 flask>=2.3.0,<3.0.0
-gunicorn>=21.0.0
-python-dotenv>=1.0.0
-
-# ============ PyTorch (CPU version for Render) ============
+gunicorn>=21.0.0,<22.0.0
+python-dotenv>=1.0.0,<2.0.0
+pillow>=10.0.0,<11.0.0
+numpy>=1.24.0,<2.0.0
+requests>=2.31.0,<3.0.0
+gdown>=5.0.0,<6.0.0
 --index-url https://download.pytorch.org/whl/cpu
 torch==2.7.1+cpu
 torchvision==0.22.1+cpu
 torchaudio==2.7.1+cpu
-
-# ============ Image Processing ============
-pillow>=10.0.0
-numpy>=1.24.0
-
-# ============ Utilities ============
-requests>=2.31.0
-gdown>=5.0.0
