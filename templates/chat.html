@@ -1,7 +1,7 @@
 <!-- templates/chat.html -->
 <!DOCTYPE html>
 <html dir="rtl">
-<head>
+<head>إ
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>دستیار تشخیص IBD | کرون و کولیت</title>
@@ -438,7 +438,7 @@
         let debugMode = false;
 
         // ✅ آدرس سرور
-        const SERVER_URL = 'https://crohn-1.onrender.com';
+        const SERVER_URL = 'https://crohn-1.onrender.com';  // ✅ بدون slash آخر
 
         // ============ نمایش/مخفی کردن پنل دیباگ ============
         debugToggleBtn.addEventListener('click', function() {
@@ -567,7 +567,9 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(requestBody)
+                    body: JSON.stringify({
+                        image: currentImage
+                    })
                 });
 
                 const data = await response.json();
