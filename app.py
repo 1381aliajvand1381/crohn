@@ -9,7 +9,6 @@ import base64
 from flask import Flask, request, jsonify, render_template
 import numpy as np
 import requests
-import json
 
 app = Flask(__name__)
 
@@ -70,35 +69,20 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# ============ 2️⃣ LLM برای جمله‌بندی ============
+# ============ 2️⃣ لاما فقط برای جمله‌بندی ============
 OPENROUTER_API_KEY = "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"
-SITE_URL = "https://crohn-1.onrender.com"
-SITE_NAME = "Crohn IBD Detector"
 
-def generate_llm_response(disease_name, confidence, language='fa'):
+def format_with_llm(disease_fa, confidence):
     """
-    ارسال نتیجه مدل به LLM برای جمله‌بندی
+    فقط جمله‌بندی نتیجه - بدون تحلیل اضافه
     """
     
-    # زبان کاربر
-    lang_instruction = "به زبان فارسی پاسخ بده." if language == 'fa' else "Answer in English."
-    
-    # پرامپت هوشمند
-    prompt = f"""
-    شما یک دستیار پزشکی متخصص در تشخیص بیماری‌های گوارشی هستید.
-    
-    نتیجه تشخیص مدل هوش مصنوعی:
-    - بیماری: {disease_name}
-    - درصد اطمینان: {confidence:.1%}
-    
-    وظیفه شما:
-    1. این نتیجه را در قالب یک جمله روان و دوستانه به کاربر توضیح بده
-    2. اگر بیماری تشخیص داده شده، به کاربر توصیه کن با پزشک مشورت کند
-    3. اگر نرمال است، با آرامش به کاربر اطلاع بده
-    4. از کلمات تخصصی سنگین استفاده نکن
-    
-    {lang_instruction}
-    """
+    prompt = f"""به عنوان یک دستیار، این نتیجه تشخیص را به یک جمله روان و دوستانه تبدیل کن:
+
+تشخیص: {disease_fa}
+اطمینان: {confidence:.1%}
+
+فقط یک جمله ساده و دوستانه بنویس، بدون توضیح اضافه."""
     
     try:
         response = requests.post(
@@ -106,56 +90,36 @@ def generate_llm_response(disease_name, confidence, language='fa'):
             headers={
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": SITE_URL,
-                "X-Title": SITE_NAME,
             },
             json={
                 "model": "meta-llama/llama-3.2-11b-vision-instruct:free",
                 "messages": [
-                    {"role": "system", "content": "تو یک دستیار پزشکی هستی که نتایج تشخیص را به زبان ساده توضیح می‌دهی."},
                     {"role": "user", "content": prompt}
                 ],
-                "max_tokens": 200,
+                "max_tokens": 50,  # فقط یه جمله کوتاه
                 "temperature": 0.3,
             },
-            timeout=10
+            timeout=5
         )
         
         result = response.json()
-        if "choices" in result and len(result["choices"]) > 0:
-            return result["choices"][0]["message"]["content"]
-        else:
-            # fallback به جمله پیش‌فرض
-            return get_fallback_response(disease_name, confidence)
-            
-    except Exception as e:
-        print(f"⚠️ خطا در ارتباط با LLM: {e}")
-        return get_fallback_response(disease_name, confidence)
-
-def get_fallback_response(disease_name, confidence):
-    """جملات پیش‌فرض در صورت عدم دسترسی به LLM"""
-    confidence_percent = f"{confidence*100:.1f}%"
-    
-    fallbacks = {
-        'normal': f"✅ تصویر آندوسکوپی شما نرمال ارزیابی شد. با اطمینان {confidence_percent} هیچ نشانه‌ای از التهاب یا بیماری مشاهده نشد.",
-        'crohn': f"⚠️ بر اساس تحلیل تصویر با دقت {confidence_percent}، یافته‌ها با بیماری کرون سازگار است. توصیه می‌شود برای تشخیص قطعی به پزشک متخصص مراجعه کنید.",
-        'ulcerative-colitis': f"⚠️ تصویر شما با احتمال {confidence_percent} علائم کولیت اولسراتیو را نشان می‌دهد. لطفاً برای بررسی بیشتر با پزشک خود مشورت کنید."
-    }
-    
-    return fallbacks.get(disease_name, "نتیجه تشخیص توسط هوش مصنوعی آماده شد.")
+        return result["choices"][0]["message"]["content"].strip()
+        
+    except:
+        # اگر لاما در دسترس نبود، جمله ساده خودمون
+        return f"تشخیص: {disease_fa} با اطمینان {confidence:.1%}"
 
 # ============ 3️⃣ صفحه اصلی ============
 @app.route('/')
 def index():
     return render_template('chat.html')
 
-# ============ 4️⃣ پیش‌بینی + LLM ============
+# ============ 4️⃣ پیش‌بینی + جمله‌بندی با لاما ============
 @app.route('/api/predict', methods=['POST'])
 def predict():
     try:
         data = request.json
         image_data = data.get('image')
-        language = data.get('language', 'fa')  # زبان کاربر
         
         if not image_data:
             return jsonify({'error': 'عکسی ارسال نشده'}), 400
@@ -180,20 +144,16 @@ def predict():
         class_name_fa = class_names_fa[class_name]
         confidence_score = confidence.item()
         
-        # 🟡 ارسال به LLM برای جمله‌بندی
-        llm_response = generate_llm_response(
-            disease_name=class_name_fa,
-            confidence=confidence_score,
-            language=language
-        )
+        # 🟡 لاما فقط جمله‌بندی میکنه
+        llm_sentence = format_with_llm(class_name_fa, confidence_score)
         
         return jsonify({
             'class': class_name,
             'class_fa': class_name_fa,
             'confidence': float(confidence_score),
             'confidence_percent': f"{confidence_score*100:.1f}%",
-            'explanation': llm_response,  # ✅ پاسخ LLM
-            'fallback': False
+            'explanation': llm_sentence,  # فقط یه جمله کوتاه
+            'model': 'ResNet50 + Llama (formatting)'
         })
         
     except Exception as e:
