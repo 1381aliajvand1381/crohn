@@ -51,23 +51,6 @@
             overflow: hidden;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 15s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 0.5; }
-        }
-
         .header h1 {
             font-size: 28px;
             margin-bottom: 10px;
@@ -83,8 +66,52 @@
             z-index: 1;
         }
 
+        .debug-panel {
+            background: #1a2634;
+            color: #e2e8f0;
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d3748;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            display: none;
+        }
+
+        .debug-panel.visible {
+            display: block;
+        }
+
+        .debug-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #a0c0e0;
+        }
+
+        .debug-content {
+            background: #0f1419;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .debug-toggle {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
         .chat-box {
-            height: 500px;
+            height: 400px;
             overflow-y: auto;
             padding: 30px;
             background: #f8fafd;
@@ -141,6 +168,22 @@
             padding: 0 5px;
         }
 
+        .raw-data {
+            font-size: 11px;
+            background: #edf2f7;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            color: #4a5568;
+            border-left: 3px solid #4299e1;
+            font-family: 'Courier New', monospace;
+            display: none;
+        }
+
+        .raw-data.visible {
+            display: block;
+        }
+
         .preview-container {
             padding: 20px 30px;
             background: white;
@@ -185,11 +228,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .remove-btn:hover {
-            background: #e53e3e;
-            transform: rotate(90deg);
-        }
-
         .input-area {
             padding: 30px;
             background: white;
@@ -211,11 +249,6 @@
             transition: all 0.3s;
             font-size: 14px;
             font-weight: 500;
-        }
-
-        .file-label:hover {
-            background: #e2e8f0;
-            transform: translateY(-2px);
         }
 
         #imageInput {
@@ -309,68 +342,45 @@
             margin-top: 10px;
         }
 
-        .result-details {
-            background: #ebf8ff;
-            border-radius: 15px;
-            padding: 15px;
-            margin-top: 15px;
-            border-right: 4px solid #4299e1;
+        .raw-json-btn {
+            background: #718096;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            margin-left: 10px;
         }
 
         @media (max-width: 768px) {
-            .container {
-                border-radius: 20px;
-            }
-            
-            .header h1 {
-                font-size: 22px;
-            }
-            
-            .message-content {
-                max-width: 85%;
-            }
-            
-            .flex-row {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-                justify-content: center;
-            }
-        }
-
-        .scroll-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: #4299e1;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            transition: all 0.3s;
-            z-index: 999;
-        }
-
-        .scroll-btn:hover {
-            background: #3182ce;
-            transform: translateY(-5px);
+            .container { border-radius: 20px; }
+            .header h1 { font-size: 22px; }
+            .message-content { max-width: 85%; }
+            .flex-row { flex-direction: column; }
+            button { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🩺 دستیار تشخیص بیماری‌های التهابی روده</h1>
-            <p>تحلیل تصاویر آندوسکوپی با هوش مصنوعی | مدل ResNet50</p>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h1>🩺 دستیار تشخیص بیماری‌های التهابی روده</h1>
+                <button id="debugToggleBtn" class="debug-toggle">🔧 نمایش جزئیات</button>
+            </div>
+            <p>تحلیل تصاویر آندوسکوپی | ResNet50 + Llama 3.2</p>
+        </div>
+
+        <!-- پنل دیباگ -->
+        <div id="debugPanel" class="debug-panel">
+            <div class="debug-header">
+                <span>📋 خروجی خام سرور (JSON)</span>
+                <span id="debugStatus">⏳ منتظر درخواست...</span>
+            </div>
+            <div id="debugContent" class="debug-content">
+                برای مشاهده جزئیات، یک عکس آپلود کنید.
+            </div>
         </div>
         
         <div class="chat-box" id="chatBox">
@@ -378,11 +388,11 @@
                 <div class="message-content">
                     👋 سلام! من دستیار تشخیص کرون و کولیت اولسراتیو هستم.
                     <br><br>
-                    📤 می‌تونی عکس آندوسکوپی رو آپلود کنی و سوالاتت رو بپرسی.
+                    📤 عکس آندوسکوپی رو آپلود کن تا با ResNet50 تحلیل کنم.
                     <br>
-                    🧠 من با مدل ResNet50 آموزش دیدم و دقت بالای ۹۰٪ دارم.
+                    🧠 سپس نتیجه رو به Llama 3.2 میدم تا جمله‌بندی کنه.
                     <br>
-                    🌐 آدرس سرویس: <strong>crohn-1.onrender.com</strong>
+                    🔧 برای دیدن خروجی خام سرور، دکمه "نمایش جزئیات" رو بزن.
                 </div>
                 <div class="timestamp">${new Date().toLocaleTimeString('fa-IR')}</div>
             </div>
@@ -401,7 +411,7 @@
             </div>
             
             <div class="flex-row">
-                <textarea id="messageInput" rows="2" placeholder="سوال خود را بپرسید... (مثلاً: این عکس رو تحلیل کن)"></textarea>
+                <textarea id="messageInput" rows="2" placeholder="سوال خود را بپرسید... (اختیاری)"></textarea>
                 <button onclick="sendMessage()">
                     ارسال
                     <span style="font-size: 18px;">🚀</span>
@@ -411,8 +421,8 @@
         
         <div class="loading" id="loading">
             <div class="loader"></div>
-            <p style="margin-top: 10px; color: #4a5568; font-weight: 500;">در حال تحلیل تصویر توسط هوش مصنوعی...</p>
-            <p style="color: #718096; font-size: 12px; margin-top: 5px;">حدود ۵-۱۰ ثانیه زمان می‌برد</p>
+            <p style="margin-top: 10px; color: #4a5568; font-weight: 500;">در حال تحلیل...</p>
+            <p style="color: #718096; font-size: 12px;">ResNet50 → Llama 3.2</p>
         </div>
     </div>
 
@@ -420,10 +430,73 @@
         // ============ تنظیمات اولیه ============
         const chatBox = document.getElementById('chatBox');
         const loading = document.getElementById('loading');
+        const debugPanel = document.getElementById('debugPanel');
+        const debugContent = document.getElementById('debugContent');
+        const debugStatus = document.getElementById('debugStatus');
+        const debugToggleBtn = document.getElementById('debugToggleBtn');
         let currentImage = null;
+        let debugMode = false;
 
-        // ✅ آدرس ثابت سرور - این مهمه!
+        // ✅ آدرس سرور
         const SERVER_URL = 'https://crohn-1.onrender.com';
+
+        // ============ نمایش/مخفی کردن پنل دیباگ ============
+        debugToggleBtn.addEventListener('click', function() {
+            debugMode = !debugMode;
+            if (debugMode) {
+                debugPanel.classList.add('visible');
+                debugToggleBtn.textContent = '🔧 مخفی جزئیات';
+            } else {
+                debugPanel.classList.remove('visible');
+                debugToggleBtn.textContent = '🔧 نمایش جزئیات';
+            }
+        });
+
+        // ============ نمایش خروجی خام سرور ============
+        function showRawResponse(data, status) {
+            if (!debugMode) return;
+            
+            debugStatus.textContent = `✅ پاسخ دریافتی | زمان: ${new Date().toLocaleTimeString('fa-IR')}`;
+            
+            // فرمت JSON با رنگ‌بندی
+            const formattedJSON = JSON.stringify(data, null, 2);
+            
+            let html = `<pre style="margin:0; color:#e2e8f0; font-family:'Courier New', monospace;">`;
+            html += `<span style="color:#48bb78;">➤ STATUS: ${status}</span>\n`;
+            html += `<span style="color:#4299e1;">➤ TIMESTAMP: ${new Date().toISOString()}</span>\n\n`;
+            
+            // رنگ‌بندی کلید‌ها و مقادیر
+            const coloredJSON = formattedJSON.replace(/"([^"]+)":/g, '<span style="color:#fbbf24;">"$1"</span>:')
+                                           .replace(/: "([^"]+)"/g, ': <span style="color:#a0c0e0;">"$1"</span>')
+                                           .replace(/: ([0-9.]+)/g, ': <span style="color:#48bb78;">$1</span>')
+                                           .replace(/: (true|false)/g, ': <span style="color:#f56565;">$1</span>');
+            
+            html += coloredJSON;
+            html += `</pre>`;
+            
+            debugContent.innerHTML = html;
+            
+            // لاگ در کنسول هم برای دیباگ
+            console.log('📦 خروجی خام سرور:', data);
+            console.log('📊 کلاس تشخیص:', data.class);
+            console.log('🎯 درصد اطمینان:', data.confidence_percent);
+            console.log('💬 پاسخ LLM:', data.explanation);
+        }
+
+        // ============ نمایش خطای سرور ============
+        function showRawError(error) {
+            if (!debugMode) return;
+            
+            debugStatus.textContent = `❌ خطا | ${new Date().toLocaleTimeString('fa-IR')}`;
+            debugContent.innerHTML = `
+                <pre style="margin:0; color:#fc8181; font-family:'Courier New', monospace;">
+❌ ERROR: ${error.message}
+📡 URL: ${SERVER_URL}/api/predict
+🕒 TIME: ${new Date().toISOString()}
+                </pre>
+            `;
+            console.error('❌ خطا:', error);
+        }
 
         // ============ پیش‌نمایش عکس ============
         document.getElementById('imageInput').addEventListener('change', function(e) {
@@ -446,8 +519,8 @@
                         <div class="image-preview-wrapper">
                             <img src="${e.target.result}" class="image-preview" alt="پیش‌نمایش">
                             <button onclick="removeImage()" class="remove-btn" title="حذف عکس">✕</button>
-                            <span style="position: absolute; bottom: -10px; left: 10px; background: #4299e1; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                                🖼️ آماده تحلیل
+                            <span style="position: absolute; bottom: -10px; left: 10px; background: #4299e1; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px;">
+                                🖼️ آماده ارسال
                             </span>
                         </div>
                     `;
@@ -456,50 +529,52 @@
             }
         });
 
-        // ============ حذف عکس ============
         function removeImage() {
             currentImage = null;
             document.getElementById('imagePreviewContainer').innerHTML = '';
             document.getElementById('imageInput').value = '';
         }
 
-        // ============ ارسال پیام ============
+        // ============ ارسال به سرور ============
         async function sendMessage() {
             const messageInput = document.getElementById('messageInput');
             const message = messageInput.value.trim();
             
-            if (!message && !currentImage) {
-                showError('لطفاً پیام بنویسید یا عکس آپلود کنید');
+            if (!currentImage) {
+                showError('لطفاً ابتدا یک عکس آپلود کنید');
                 return;
             }
             
+            // نمایش پیام کاربر
             addMessage(message || '🖼️ تحلیل تصویر آندوسکوپی', 'user');
-            
-            if (currentImage) {
-                addImageMessage(currentImage, 'user');
-            }
+            addImageMessage(currentImage, 'user');
             
             messageInput.value = '';
             showLoading();
             
             try {
-                // ✅ استفاده از آدرس کامل سرور
+                const requestBody = {
+                    message: message,
+                    image: currentImage,
+                    language: 'fa'
+                };
+
+                // لاگ درخواست در کنسول
+                console.log('📤 درخواست ارسال شد:', requestBody);
+
                 const response = await fetch(`${SERVER_URL}/api/predict`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        message: message,
-                        image: currentImage
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
                 const data = await response.json();
+                
+                // ✅ نمایش خروجی خام
+                showRawResponse(data, response.status);
+                
                 hideLoading();
                 
                 if (data.error) {
@@ -510,12 +585,12 @@
                 
             } catch (error) {
                 hideLoading();
+                showRawError(error);
                 showError('خطا در ارتباط با سرور: ' + error.message);
-                console.error('Error:', error);
             }
         }
 
-        // ============ نمایش نتیجه پیش‌بینی ============
+        // ============ نمایش نتیجه ============
         function showPredictionResult(data) {
             let confidenceColor = '';
             let confidenceText = '';
@@ -531,10 +606,16 @@
                 confidenceText = 'کمتر مطمئن';
             }
             
+            // دکمه نمایش JSON خام
+            const rawDataBtn = `<button class="raw-json-btn" onclick='alert(JSON.stringify(${JSON.stringify(data)}, null, 2))'>📋 نمایش JSON</button>`;
+            
             const resultHTML = `
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <span style="font-size: 24px;">🔬</span>
-                    <span style="font-weight: 700; color: #2d3748;">نتیجه تشخیص:</span>
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 24px;">🔬</span>
+                        <span style="font-weight: 700; color: #2d3748;">نتیجه تشخیص:</span>
+                        ${rawDataBtn}
+                    </div>
                 </div>
                 
                 <div style="background: linear-gradient(135deg, #667eea15, #764ba215); padding: 20px; border-radius: 15px; border-right: 5px solid #667eea;">
@@ -566,12 +647,12 @@
                         </div>
                     </div>
                     
-                    <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 10px; border-right: 4px solid #ed8936;">
+                    <div style="margin-top: 20px; padding: 15px; background: #ebf8ff; border-radius: 10px; border-right: 4px solid #4299e1;">
                         <div style="display: flex; gap: 10px;">
-                            <span style="font-size: 20px;">💡</span>
+                            <span style="font-size: 20px;">💬</span>
                             <div>
                                 <span style="font-weight: 700; color: #2d3748; display: block; margin-bottom: 5px;">
-                                    توضیح تشخیص:
+                                    توضیح Llama 3.2:
                                 </span>
                                 <span style="color: #4a5568; line-height: 1.6;">
                                     ${data.explanation}
@@ -582,10 +663,10 @@
                     
                     <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
                         <span style="padding: 5px 12px; background: #e2e8f0; border-radius: 15px; font-size: 12px; color: #4a5568;">
-                            ⚕️ تشخیص هوش مصنوعی
+                            🤖 ResNet50 + Llama 3.2
                         </span>
                         <span style="padding: 5px 12px; background: #e2e8f0; border-radius: 15px; font-size: 12px; color: #4a5568;">
-                            🏥 نیاز به تأیید پزشک
+                            ⚕️ نیاز به تأیید پزشک
                         </span>
                     </div>
                 </div>
@@ -594,7 +675,7 @@
             addMessage(resultHTML, 'bot');
         }
 
-        // ============ اضافه کردن پیام متنی ============
+        // ============ توابع کمکی ============
         function addMessage(content, sender) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
@@ -616,7 +697,6 @@
             scrollToBottom();
         }
 
-        // ============ اضافه کردن پیام تصویری ============
         function addImageMessage(imageData, sender) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
@@ -640,7 +720,6 @@
             scrollToBottom();
         }
 
-        // ============ نمایش خطا ============
         function showError(message) {
             const errorDiv = document.createElement('div');
             errorDiv.style.cssText = `
@@ -668,7 +747,6 @@
             }, 5000);
         }
 
-        // ============ نمایش/مخفی کردن لودینگ ============
         function showLoading() {
             loading.style.display = 'block';
             chatBox.style.opacity = '0.7';
@@ -679,7 +757,6 @@
             chatBox.style.opacity = '1';
         }
 
-        // ============ اسکرول به پایین ============
         function scrollToBottom() {
             chatBox.scrollTo({
                 top: chatBox.scrollHeight,
@@ -693,23 +770,6 @@
                 e.preventDefault();
                 sendMessage();
             }
-        });
-
-        // ============ بررسی وضعیت سرور ============
-        async function checkServerStatus() {
-            try {
-                const response = await fetch(`${SERVER_URL}/`);
-                if (response.ok) {
-                    console.log('✅ سرور فعال است');
-                }
-            } catch (error) {
-                console.error('❌ خطا در ارتباط با سرور:', error);
-            }
-        }
-
-        // ============ شروع ============
-        document.addEventListener('DOMContentLoaded', function() {
-            checkServerStatus();
         });
 
         // ============ انیمیشن fadeOut ============
