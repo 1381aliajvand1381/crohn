@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.pyc
+venv/
+env/
+.vscode/
+.idea/
+.DS_Store
+*.zip
+*.tar.gz
+*.log
+**/*.pth
+!models/final_ibd_model.pth  # ✅ این یکی رو استثنا کن!
+!models/best_ibd_model.pth   # ✅ این یکی رو استثنا کن!
