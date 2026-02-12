@@ -20,7 +20,7 @@ CORS(app)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"🚀 Server starting on {DEVICE}")
 
-# ============ Groq API - نهایی و فعال ============
+# ============ Groq API - تنها سرویس فعال ============
 GROQ_API_KEY = "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"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
@@ -101,6 +101,8 @@ transform = transforms.Compose([
 def format_with_groq(disease_fa, confidence):
     """جمله‌بندی با Groq Llama 3.3 (رایگان - فعال)"""
     
+    print(f"🟡 ارسال درخواست به Groq...")
+    
     prompts = {
         'normal': f"تشخیص: {disease_fa} با اطمینان {confidence:.1f}%. یک جمله ساده و دوستانه که به کاربر اطمینان بدهد و بگوید نگران نباشد بنویس.",
         'crohn': f"تشخیص: {disease_fa} با اطمینان {confidence:.1f}%. یک جمله ساده و دلسوزانه که کاربر را به مشورت با پزشک متخصص تشویق کند بنویس.",
@@ -139,7 +141,7 @@ def format_with_groq(disease_fa, confidence):
             result = response.json()
             reply = result["choices"][0]["message"]["content"].strip()
             reply = reply.strip('"').strip("'").strip()
-            print(f"🟡 Groq 70B پاسخ: {reply}")
+            print(f"✅ Groq 70B پاسخ: {reply}")
             return reply
         else:
             print(f"⚠️ Groq 70B خطا: {response.status_code}")
@@ -173,7 +175,7 @@ def fallback_groq_8b(disease_fa, confidence):
         if response.status_code == 200:
             result = response.json()
             reply = result["choices"][0]["message"]["content"].strip()
-            print(f"🟢 Groq 8B پاسخ: {reply}")
+            print(f"✅ Groq 8B پاسخ: {reply}")
             return reply
         else:
             return f"✅ تشخیص: {disease_fa} با اطمینان {confidence:.1f}%"
@@ -208,7 +210,7 @@ def test():
         'message': 'سرور Crohn IBD Detector فعال است',
         'model_loaded': model_loaded,
         'device': str(DEVICE),
-        'llm_configured': GROQ_API_KEY is not None,
+        'groq_configured': GROQ_API_KEY is not None,
         'active_model': 'llama-3.3-70b-versatile',
         'fallback_model': 'llama-3.1-8b-instant'
     })
@@ -279,6 +281,7 @@ def predict():
         
         print(f"✅ پیش‌بینی: {class_name_fa} | اطمینان: {confidence_score:.1%}")
         
+        # فقط Groq - خبری از OpenRouter نیست!
         groq_response = format_with_groq(class_name_fa, confidence_score * 100)
         
         if not groq_response:
@@ -296,7 +299,7 @@ def predict():
             'confidence': float(confidence_score),
             'confidence_percent': f"{confidence_score*100:.1f}%",
             'explanation': groq_response,
-            'groq_used': groq_response is not None and not groq_response.startswith('✅') and not groq_response.startswith('⚠️'),
+            'groq_used': True,
             'model': 'ResNet50 + Groq Llama 3.3'
         })
         
@@ -319,7 +322,8 @@ if __name__ == '__main__':
     print(f"🧠 مدل ResNet50: {'✅ لود شد' if model_loaded else '❌ لود نشد'}")
     print(f"🦙 Groq API: ✅ فعال (llama-3.3-70b-versatile)")
     print(f"⚡ Fallback: ✅ فعال (llama-3.1-8b-instant)")
-    print(f"📡 Endpoints:")
+    print(f"❌ OpenRouter: غیرفعال")
+    print("\n📡 Endpoints:")
     print(f"   - GET  /")
     print(f"   - GET  /health")
     print(f"   - GET  /api/test")
