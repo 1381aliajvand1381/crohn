@@ -14,14 +14,15 @@ import json
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)  # برای رفع مشکل CORS
+CORS(app)
 
 # ============ تنظیمات ============
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"🚀 Server starting on {DEVICE}")
 
-# ✅ API Key OpenRouter - رایگان
-OPENROUTER_API_KEY = "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"
+# ============ Groq API - نهایی و فعال ============
+GROQ_API_KEY = "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"
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 # کلاس‌های تشخیص
 CLASS_NAMES = ['normal', 'crohn', 'ulcerative-colitis']
@@ -66,7 +67,6 @@ try:
         print(f"📂 فایل مدل پیدا شد: {model_path}")
         model = IBDResNet(num_classes=3)
         
-        # بارگذاری مدل
         checkpoint = torch.load(model_path, map_location=DEVICE)
         
         if 'model_state_dict' in checkpoint:
@@ -78,16 +78,13 @@ try:
         model.eval()
         model_loaded = True
         
-        # محاسبه حجم مدل
         model_size = os.path.getsize(model_path) / (1024 * 1024)
         print(f"✅ مدل ResNet50 با موفقیت لود شد")
         print(f"   - Device: {DEVICE}")
         print(f"   - حجم فایل: {model_size:.1f} MB")
-        print(f"   - کلاس‌ها: {CLASS_NAMES}")
     else:
         print(f"❌ فایل مدل یافت نشد: {model_path}")
-        print(f"   - مسیر جاری: {os.getcwd()}")
-        print(f"   - محتویات پوشه models: {os.listdir('models') if os.path.exists('models') else 'پوشه وجود ندارد'}")
+        
 except Exception as e:
     print(f"❌ خطا در لود مدل: {e}")
     import traceback
@@ -100,36 +97,72 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# ============ تابع جمله‌بندی با OpenRouter (رایگان) ============
-def format_with_llm(disease_fa, confidence):
-    """
-    تبدیل نتیجه تشخیص به جمله روان با Llama 3.2 Vision
-    مدل: meta-llama/llama-3.2-11b-vision-instruct:free (کاملاً رایگان)
-    """
+# ============ تابع جمله‌بندی با Groq ============
+def format_with_groq(disease_fa, confidence):
+    """جمله‌بندی با Groq Llama 3.3 (رایگان - فعال)"""
     
-    # پرامپت ساده و مستقیم
-    prompt = f"""به عنوان یک دستیار پزشکی، این نتیجه تشخیص را به یک جمله ساده و دوستانه تبدیل کن:
-
-تشخیص: {disease_fa}
-درصد اطمینان: {confidence:.1f}%
-
-فقط یک جمله کوتاه و روان بنویس، بدون توضیح اضافه."""
-
+    prompts = {
+        'normal': f"تشخیص: {disease_fa} با اطمینان {confidence:.1f}%. یک جمله ساده و دوستانه که به کاربر اطمینان بدهد و بگوید نگران نباشد بنویس.",
+        'crohn': f"تشخیص: {disease_fa} با اطمینان {confidence:.1f}%. یک جمله ساده و دلسوزانه که کاربر را به مشورت با پزشک متخصص تشویق کند بنویس.",
+        'ulcerative-colitis': f"تشخیص: {disease_fa} با اطمینان {confidence:.1f}%. یک جمله ساده و دلسوزانه که کاربر را به پیگیری درمان و مشورت با پزشک تشویق کند بنویس."
+    }
+    
+    if 'نرمال' in disease_fa:
+        prompt_key = 'normal'
+    elif 'کرون' in disease_fa:
+        prompt_key = 'crohn'
+    else:
+        prompt_key = 'ulcerative-colitis'
+    
+    prompt = prompts.get(prompt_key, f"تشخیص: {disease_fa} با اطمینان {confidence:.1f}%. یک جمله ساده و دوستانه بنویس.")
+    
     try:
-        print(f"🟡 ارسال درخواست به OpenRouter...")
-        
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            GROQ_URL,
             headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://crohn-1.onrender.com",
-                "X-Title": "Crohn IBD Detector"
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json"
             },
             json={
-                "model": "meta-llama/llama-3.2-11b-vision-instruct:free",  # ✅ مدل رایگان
+                "model": "llama-3.3-70b-versatile",
                 "messages": [
+                    {"role": "system", "content": "تو یک دستیار پزشکی مهربان هستی. پاسخ‌ها را به زبان فارسی، کوتاه و مفید بده. از کلمات تخصصی سنگین استفاده نکن."},
                     {"role": "user", "content": prompt}
+                ],
+                "max_tokens": 80,
+                "temperature": 0.4
+            },
+            timeout=15
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            reply = result["choices"][0]["message"]["content"].strip()
+            reply = reply.strip('"').strip("'").strip()
+            print(f"🟡 Groq 70B پاسخ: {reply}")
+            return reply
+        else:
+            print(f"⚠️ Groq 70B خطا: {response.status_code}")
+            return fallback_groq_8b(disease_fa, confidence)
+            
+    except Exception as e:
+        print(f"⚠️ Groq 70B خطا: {e}")
+        return fallback_groq_8b(disease_fa, confidence)
+
+def fallback_groq_8b(disease_fa, confidence):
+    """مدل پشتیبان - سریعتر"""
+    try:
+        response = requests.post(
+            GROQ_URL,
+            headers={
+                "Authorization": f"Bearer {GROQ_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "llama-3.1-8b-instant",
+                "messages": [
+                    {"role": "system", "content": "پاسخ فارسی کوتاه."},
+                    {"role": "user", "content": f"تشخیص: {disease_fa} با اطمینان {confidence:.1f}%. یک جمله کوتاه بنویس."}
                 ],
                 "max_tokens": 60,
                 "temperature": 0.3
@@ -139,17 +172,15 @@ def format_with_llm(disease_fa, confidence):
         
         if response.status_code == 200:
             result = response.json()
-            llm_response = result["choices"][0]["message"]["content"].strip()
-            print(f"✅ پاسخ OpenRouter: {llm_response}")
-            return llm_response
+            reply = result["choices"][0]["message"]["content"].strip()
+            print(f"🟢 Groq 8B پاسخ: {reply}")
+            return reply
         else:
-            print(f"⚠️ OpenRouter خطا: {response.status_code}")
-            print(f"   پاسخ: {response.text[:200]}")
-            return None
+            return f"✅ تشخیص: {disease_fa} با اطمینان {confidence:.1f}%"
             
     except Exception as e:
-        print(f"⚠️ OpenRouter خطا: {e}")
-        return None
+        print(f"⚠️ Groq 8B خطا: {e}")
+        return f"✅ تشخیص: {disease_fa} با اطمینان {confidence:.1f}%"
 
 # ============ مسیرهای API ============
 
@@ -166,14 +197,50 @@ def health():
         'model_loaded': model_loaded,
         'device': str(DEVICE),
         'timestamp': datetime.now().isoformat(),
-        'llm_ready': OPENROUTER_API_KEY is not None and OPENROUTER_API_KEY.startswith('sk-or-')
+        'groq_ready': GROQ_API_KEY is not None
     })
+
+@app.route('/api/test', methods=['GET'])
+def test():
+    """تست ساده API"""
+    return jsonify({
+        'success': True,
+        'message': 'سرور Crohn IBD Detector فعال است',
+        'model_loaded': model_loaded,
+        'device': str(DEVICE),
+        'llm_configured': GROQ_API_KEY is not None,
+        'active_model': 'llama-3.3-70b-versatile',
+        'fallback_model': 'llama-3.1-8b-instant'
+    })
+
+@app.route('/api/test-groq', methods=['GET'])
+def test_groq():
+    """تست اتصال به Groq"""
+    try:
+        test_response = format_with_groq("کرون", 87.5)
+        if test_response and not test_response.startswith('✅'):
+            return jsonify({
+                'success': True,
+                'message': 'اتصال به Groq برقرار است',
+                'response': test_response,
+                'model_used': 'llama-3.3-70b-versatile'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Groq پاسخ نداد',
+                'fallback_used': True
+            }), 503
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
     """پیش‌بینی تصویر آندوسکوپی"""
     
-    # چک کردن مدل
     if not model_loaded:
         return jsonify({
             'success': False,
@@ -181,7 +248,6 @@ def predict():
         }), 503
     
     try:
-        # دریافت داده
         data = request.json
         if not data:
             return jsonify({'success': False, 'error': 'درخواست خالی است'}), 400
@@ -190,7 +256,6 @@ def predict():
         if not image_data:
             return jsonify({'success': False, 'error': 'عکسی ارسال نشده'}), 400
         
-        # پردازش تصویر
         if ',' in image_data:
             image_data = image_data.split(',')[1]
         
@@ -200,7 +265,6 @@ def predict():
         except Exception as e:
             return jsonify({'success': False, 'error': 'فرمت تصویر نامعتبر است'}), 400
         
-        # پیش‌بینی با ResNet50
         input_tensor = transform(image).unsqueeze(0).to(DEVICE)
         
         with torch.no_grad():
@@ -215,29 +279,25 @@ def predict():
         
         print(f"✅ پیش‌بینی: {class_name_fa} | اطمینان: {confidence_score:.1%}")
         
-        # ============ جمله‌بندی با OpenRouter ============
-        llm_response = format_with_llm(class_name_fa, confidence_score * 100)
+        groq_response = format_with_groq(class_name_fa, confidence_score * 100)
         
-        # اگر OpenRouter جواب نداد، از جمله پیش‌فرض استفاده کن
-        if not llm_response:
+        if not groq_response:
             if class_name == 'normal':
-                llm_response = f"✅ تصویر آندوسکوپی شما نرمال است. با اطمینان {confidence_score*100:.1f}% هیچ نشانه‌ای از التهاب مشاهده نشد."
+                groq_response = f"✅ تصویر آندوسکوپی شما نرمال است. با اطمینان {confidence_score*100:.1f}% هیچ نشانه‌ای از التهاب مشاهده نشد."
             elif class_name == 'crohn':
-                llm_response = f"⚠️ یافته‌های تصویر با بیماری کرون سازگار است. (درصد اطمینان: {confidence_score*100:.1f}%)"
+                groq_response = f"⚠️ بر اساس تحلیل تصویر با اطمینان {confidence_score*100:.1f}%، یافته‌ها با بیماری کرون سازگار است. توصیه می‌شود با پزشک متخصص مشورت کنید."
             else:
-                llm_response = f"⚠️ یافته‌های تصویر با کولیت اولسراتیو سازگار است. (درصد اطمینان: {confidence_score*100:.1f}%)"
-            
-            print(f"⚪ استفاده از جمله پیش‌فرض")
+                groq_response = f"⚠️ بر اساس تحلیل تصویر با اطمینان {confidence_score*100:.1f}%، یافته‌ها با کولیت اولسراتیو سازگار است. لطفاً برای تشخیص قطعی به پزشک مراجعه کنید."
         
-        # برگرداندن نتیجه
         return jsonify({
             'success': True,
             'class': class_name,
             'class_fa': class_name_fa,
             'confidence': float(confidence_score),
             'confidence_percent': f"{confidence_score*100:.1f}%",
-            'explanation': llm_response,
-            'llm_used': llm_response is not None and not llm_response.startswith('✅') and not llm_response.startswith('⚠️')
+            'explanation': groq_response,
+            'groq_used': groq_response is not None and not groq_response.startswith('✅') and not groq_response.startswith('⚠️'),
+            'model': 'ResNet50 + Groq Llama 3.3'
         })
         
     except Exception as e:
@@ -249,44 +309,22 @@ def predict():
             'error': f'خطای داخلی سرور: {str(e)}'
         }), 500
 
-@app.route('/api/test', methods=['GET'])
-def test():
-    """تست ساده API"""
-    return jsonify({
-        'success': True,
-        'message': 'سرور Crohn IBD Detector فعال است',
-        'model_loaded': model_loaded,
-        'device': str(DEVICE),
-        'llm_configured': OPENROUTER_API_KEY is not None and OPENROUTER_API_KEY.startswith('sk-or-')
-    })
-
-@app.route('/api/test-llm', methods=['GET'])
-def test_llm():
-    """تست اتصال به OpenRouter"""
-    try:
-        test_response = format_with_llm("کرون", 85.5)
-        if test_response:
-            return jsonify({
-                'success': True,
-                'message': 'اتصال به OpenRouter برقرار است',
-                'response': test_response
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'OpenRouter پاسخ نداد'
-            }), 503
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
 # ============ اجرای برنامه ============
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
+    print("\n" + "="*60)
+    print("🚀 Crohn IBD Detector Server - نسخه نهایی")
+    print("="*60)
     print(f"🌐 Server running on port {port}")
-    print(f"📝 OpenRouter API Key: {'✅ تنظیم شده' if OPENROUTER_API_KEY.startswith('sk-or-') else '❌ تنظیم نشده'}")
-    print(f"🧠 مدل: {'✅ لود شد' if model_loaded else '❌ لود نشد'}")
-    print("="*50)
+    print(f"🧠 مدل ResNet50: {'✅ لود شد' if model_loaded else '❌ لود نشد'}")
+    print(f"🦙 Groq API: ✅ فعال (llama-3.3-70b-versatile)")
+    print(f"⚡ Fallback: ✅ فعال (llama-3.1-8b-instant)")
+    print(f"📡 Endpoints:")
+    print(f"   - GET  /")
+    print(f"   - GET  /health")
+    print(f"   - GET  /api/test")
+    print(f"   - GET  /api/test-groq")
+    print(f"   - POST /api/predict")
+    print("="*60 + "\n")
+    
     app.run(host='0.0.0.0', port=port)
