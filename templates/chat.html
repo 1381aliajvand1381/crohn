@@ -1,202 +1,148 @@
-<!-- templates/chat.html -->
 <!DOCTYPE html>
 <html dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دستیار تشخیص IBD | کرون و کولیت</title>
+    <title>دستیار تشخیص IBD</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             overflow: hidden;
-            animation: slideIn 0.5s ease;
         }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+        
         .header {
-            background: linear-gradient(135deg, #2c3e50, #1e2a3a);
+            background: #4a5568;
             color: white;
             padding: 30px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
         }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 15s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 0.5; }
-        }
-
+        
         .header h1 {
-            font-size: 28px;
+            font-size: 24px;
             margin-bottom: 10px;
-            font-weight: 700;
-            position: relative;
-            z-index: 1;
         }
-
+        
         .header p {
-            color: #a0c0e0;
-            font-size: 15px;
-            position: relative;
-            z-index: 1;
+            color: #cbd5e0;
+            font-size: 14px;
         }
-
+        
         .status-bar {
-            background: #1a2634;
+            background: #2d3748;
             color: #e2e8f0;
             padding: 12px 20px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            font-size: 13px;
-            border-bottom: 1px solid #2d3748;
-        }
-
-        .status-indicator {
-            display: flex;
             align-items: center;
-            gap: 8px;
+            font-size: 13px;
         }
-
+        
         .status-dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-dot.green {
             background: #48bb78;
             box-shadow: 0 0 10px #48bb78;
-            animation: pulse 2s infinite;
         }
-
-        .status-dot.error {
+        
+        .status-dot.red {
             background: #f56565;
             box-shadow: 0 0 10px #f56565;
         }
-
+        
+        .status-dot.yellow {
+            background: #ecc94b;
+            box-shadow: 0 0 10px #ecc94b;
+        }
+        
         .chat-box {
             height: 450px;
             overflow-y: auto;
-            padding: 30px;
-            background: #f8fafd;
-            scroll-behavior: smooth;
+            padding: 20px;
+            background: #f7fafc;
         }
-
+        
         .message {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            animation: fadeIn 0.3s ease;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        
         .user-message {
             align-items: flex-end;
         }
-
+        
         .bot-message {
             align-items: flex-start;
         }
-
+        
         .message-content {
             max-width: 70%;
-            padding: 15px 20px;
-            border-radius: 20px;
+            padding: 12px 18px;
+            border-radius: 18px;
             font-size: 14px;
-            line-height: 1.6;
-            position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            line-height: 1.5;
         }
-
+        
         .user-message .message-content {
-            background: linear-gradient(135deg, #4299e1, #3182ce);
+            background: #4299e1;
             color: white;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 4px;
         }
-
+        
         .bot-message .message-content {
             background: white;
             color: #2d3748;
             border: 1px solid #e2e8f0;
-            border-bottom-left-radius: 5px;
+            border-bottom-left-radius: 4px;
         }
-
+        
         .timestamp {
             font-size: 11px;
-            color: #718096;
-            margin-top: 5px;
-            padding: 0 5px;
+            color: #a0aec0;
+            margin-top: 4px;
         }
-
+        
         .preview-container {
-            padding: 20px 30px;
-            background: white;
+            padding: 15px 20px;
+            background: #edf2f7;
             border-top: 1px solid #e2e8f0;
         }
-
+        
         .image-preview-wrapper {
             position: relative;
             display: inline-block;
-            animation: scaleIn 0.3s ease;
         }
-
-        @keyframes scaleIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
+        
         .image-preview {
-            max-width: 250px;
-            max-height: 250px;
-            border-radius: 15px;
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
             border: 3px solid #4299e1;
-            box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
         }
-
+        
         .remove-btn {
             position: absolute;
             top: -10px;
@@ -207,159 +153,96 @@
             color: white;
             border: none;
             border-radius: 50%;
-            font-size: 16px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-
-        .remove-btn:hover {
-            background: #e53e3e;
-            transform: rotate(90deg);
-        }
-
+        
         .input-area {
-            padding: 30px;
+            padding: 20px;
             background: white;
             border-top: 1px solid #e2e8f0;
         }
-
-        .file-input {
-            margin-bottom: 15px;
-        }
-
+        
         .file-label {
-            display: inline-flex;
-            align-items: center;
+            display: inline-block;
             padding: 10px 20px;
             background: #edf2f7;
             color: #4a5568;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 500;
+            margin-bottom: 10px;
         }
-
-        .file-label:hover {
-            background: #e2e8f0;
-            transform: translateY(-2px);
-        }
-
+        
         #imageInput {
             display: none;
         }
-
+        
         .flex-row {
             display: flex;
-            gap: 15px;
-            align-items: flex-end;
+            gap: 10px;
         }
-
+        
         textarea {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #e2e8f0;
-            border-radius: 15px;
+            border-radius: 8px;
             resize: none;
             font-family: inherit;
-            font-size: 14px;
-            line-height: 1.6;
-            transition: all 0.3s;
-            background: #f8fafd;
         }
-
-        textarea:focus {
-            outline: none;
-            border-color: #4299e1;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
-        }
-
-        .send-btn {
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #48bb78, #38a169);
+        
+        button {
+            padding: 12px 24px;
+            background: #48bb78;
             color: white;
             border: none;
-            border-radius: 15px;
-            font-size: 15px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
         }
-
-        .send-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        
+        button:hover {
+            background: #38a169;
         }
-
-        .send-btn:disabled {
+        
+        button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
-
+        
         .loading {
             display: none;
             text-align: center;
-            padding: 30px;
-            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            background: rgba(255,255,255,0.9);
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            z-index: 1000;
-            min-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
-
+        
         .loader {
             border: 4px solid #f3f3f3;
-            border-radius: 50%;
             border-top: 4px solid #4299e1;
-            width: 50px;
-            height: 50px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 10px;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .confidence-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
+        
         .test-card {
-            background: #f8fafd;
-            border: 1px solid #e2e8f0;
-            border-radius: 15px;
+            background: #ebf8ff;
             padding: 15px;
-            margin-top: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .container { border-radius: 20px; }
-            .header h1 { font-size: 22px; }
-            .message-content { max-width: 85%; }
-            .flex-row { flex-direction: column; }
-            .send-btn { width: 100%; justify-content: center; }
+            border-radius: 8px;
+            margin-top: 10px;
+            border-right: 4px solid #4299e1;
         }
     </style>
 </head>
@@ -367,369 +250,220 @@
     <div class="container">
         <div class="header">
             <h1>🩺 دستیار تشخیص بیماری‌های التهابی روده</h1>
-            <p>تحلیل تصاویر آندوسکوپی با ResNet50 | دقت ۹۰٪+</p>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="status-bar" id="statusBar">
-            <div class="status-indicator">
-                <span class="status-dot" id="statusDot"></span>
-                <span id="statusText">بررسی ارتباط با سرور...</span>
-            </div>
-            <span id="serverUrl">crohn-1.onrender.com</span>
+            <p>تحلیل تصاویر آندوسکوپی با ResNet50 + Llama 3.2</p>
         </div>
         
-        <!-- Chat Box -->
+        <div class="status-bar" id="statusBar">
+            <span id="statusText">
+                <span class="status-dot yellow" id="statusDot"></span>
+                در حال اتصال به سرور...
+            </span>
+            <span id="serverInfo">crohn-1.onrender.com</span>
+        </div>
+        
         <div class="chat-box" id="chatBox">
             <div class="message bot-message">
                 <div class="message-content">
-                    👋 سلام! به دستیار تشخیص هوشمند IBD خوش آمدید.
-                    <br><br>
-                    📤 برای شروع، یک عکس آندوسکوپی آپلود کنید.
-                    <br>
-                    🧠 مدل ResNet50 تصویر را تحلیل می‌کند.
-                    <br>
-                    ⚕️ نتیجه با درصد اطمینان نمایش داده می‌شود.
+                    👋 سلام! به دستیار تشخیص هوشمند خوش آمدید.<br><br>
+                    📤 یک عکس آندوسکوپی آپلود کنید.<br>
+                    🧠 ResNet50 تصویر را تحلیل می‌کند.<br>
+                    💬 Llama 3.2 نتیجه را جمله‌بندی می‌کند.
                 </div>
-                <div class="timestamp" id="welcomeTimestamp"></div>
+                <div class="timestamp" id="welcomeTime"></div>
             </div>
         </div>
         
-        <!-- Image Preview -->
         <div class="preview-container">
-            <div id="imagePreviewContainer"></div>
+            <div id="imagePreview"></div>
         </div>
         
-        <!-- Input Area -->
         <div class="input-area">
-            <div class="file-input">
-                <label for="imageInput" class="file-label">
-                    📤 انتخاب عکس آندوسکوپی
-                </label>
-                <input type="file" id="imageInput" accept="image/*">
-            </div>
+            <label for="imageInput" class="file-label">
+                📤 انتخاب عکس آندوسکوپی
+            </label>
+            <input type="file" id="imageInput" accept="image/*">
             
             <div class="flex-row">
-                <textarea id="messageInput" rows="2" placeholder="پیام خود را بنویسید (اختیاری)..." disabled></textarea>
-                <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>
-                    ارسال
-                    <span style="font-size: 18px;">🚀</span>
-                </button>
+                <textarea id="messageInput" rows="2" placeholder="سوال خود را بپرسید (اختیاری)..." disabled></textarea>
+                <button id="sendBtn" onclick="sendMessage()" disabled>ارسال</button>
             </div>
         </div>
         
-        <!-- Loading Modal -->
         <div class="loading" id="loading">
             <div class="loader"></div>
-            <p style="margin-top: 10px; color: #4a5568; font-weight: 500;">در حال تحلیل تصویر...</p>
-            <p style="color: #718096; font-size: 12px; margin-top: 5px;">ResNet50 در حال پردازش</p>
+            <p>در حال تحلیل تصویر...</p>
+            <p style="font-size: 12px; color: #718096;">ResNet50 → Llama 3.2</p>
         </div>
     </div>
 
     <script>
-        // ============ تنظیمات ============
         const SERVER_URL = 'https://crohn-1.onrender.com';
-        const chatBox = document.getElementById('chatBox');
-        const loading = document.getElementById('loading');
-        const sendBtn = document.getElementById('sendBtn');
-        const messageInput = document.getElementById('messageInput');
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        
         let currentImage = null;
-
-        // ============ تست اتصال به سرور ============
-        async function testServerConnection() {
+        
+        // ============ بررسی وضعیت سرور ============
+        async function checkServer() {
             try {
-                statusText.innerText = 'در حال اتصال به سرور...';
-                statusDot.className = 'status-dot';
-                
-                // تست endpoint سلامت
-                const response = await fetch(`${SERVER_URL}/health`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    mode: 'cors',
-                    cache: 'no-cache'
-                });
-                
+                const response = await fetch(`${SERVER_URL}/health`);
                 if (response.ok) {
                     const data = await response.json();
-                    statusDot.className = 'status-dot';
-                    statusText.innerText = `✅ سرور فعال | مدل: ${data.model_loaded ? 'بارگذاری شد' : 'خطا'}`;
+                    document.getElementById('statusDot').className = 'status-dot green';
+                    document.getElementById('statusText').innerHTML = 
+                        `<span class="status-dot green"></span> ✅ سرور فعال | مدل: ${data.model_loaded ? 'بارگذاری شد' : 'خطا'}`;
+                    document.getElementById('sendBtn').disabled = false;
+                    document.getElementById('messageInput').disabled = false;
                     
-                    // فعال کردن دکمه‌ها
-                    sendBtn.disabled = false;
-                    messageInput.disabled = false;
+                    // اضافه کردن پیام تست
+                    addSystemMessage('✅ اتصال به سرور برقرار شد. آماده دریافت عکس.');
                     
-                    console.log('✅ اتصال به سرور موفق:', data);
-                    return true;
-                } else {
-                    throw new Error(`HTTP ${response.status}`);
+                    if (!data.model_loaded) {
+                        addSystemMessage('⚠️ مدل هنوز لود نشده، چند لحظه صبر کنید...');
+                    }
                 }
             } catch (error) {
-                console.error('❌ خطا در اتصال به سرور:', error);
-                statusDot.className = 'status-dot error';
-                statusText.innerText = '❌ قطع ارتباط با سرور';
-                sendBtn.disabled = true;
-                messageInput.disabled = true;
-                return false;
+                document.getElementById('statusDot').className = 'status-dot red';
+                document.getElementById('statusText').innerHTML = 
+                    `<span class="status-dot red"></span> ❌ قطع ارتباط با سرور`;
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('messageInput').disabled = true;
             }
         }
-
-        // ============ تست مستقیم مدل با عکس نمونه ============
-        async function testModelWithSample() {
-            try {
-                // اول اتصال به سرور رو چک کن
-                const isConnected = await testServerConnection();
-                if (!isConnected) {
-                    addSystemMessage('❌ امکان اتصال به سرور وجود ندارد. لطفاً بعداً تلاش کنید.');
-                    return;
-                }
-
-                addSystemMessage('🧪 در حال ارسال درخواست تست به سرور...');
-                
-                const response = await fetch(`${SERVER_URL}/api/predict`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        image: null,
-                        test: true 
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (response.ok) {
-                    addSystemMessage('✅ سرور آماده است و منتظر دریافت عکس می‌باشد.');
-                } else {
-                    addSystemMessage(`⚠️ پاسخ سرور: ${data.error || 'خطای ناشناخته'}`);
-                }
-            } catch (error) {
-                addSystemMessage(`❌ خطا: ${error.message}`);
-            }
-        }
-
+        
         // ============ اضافه کردن پیام سیستمی ============
         function addSystemMessage(text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot-message';
-            
-            const timestamp = new Date().toLocaleTimeString('fa-IR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            messageDiv.innerHTML = `
-                <div class="message-content" style="background: #ebf8ff; border-color: #4299e1;">
+            const chatBox = document.getElementById('chatBox');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message bot-message';
+            msgDiv.innerHTML = `
+                <div class="message-content" style="background: #ebf8ff;">
                     ${text}
-                    <div style="margin-top: 8px; font-size: 11px; color: #718096;">🖥️ سیستم</div>
                 </div>
-                <div class="timestamp">${timestamp}</div>
+                <div class="timestamp">${new Date().toLocaleTimeString('fa-IR')}</div>
             `;
-            
-            chatBox.appendChild(messageDiv);
-            scrollToBottom();
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-
+        
         // ============ پیش‌نمایش عکس ============
         document.getElementById('imageInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('حجم فایل نباید بیشتر از 10 مگابایت باشد');
-                    return;
-                }
-                
                 if (!file.type.startsWith('image/')) {
                     alert('لطفاً فقط فایل تصویری آپلود کنید');
                     return;
                 }
-
+                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     currentImage = e.target.result;
-                    document.getElementById('imagePreviewContainer').innerHTML = `
+                    document.getElementById('imagePreview').innerHTML = `
                         <div class="image-preview-wrapper">
-                            <img src="${e.target.result}" class="image-preview" alt="پیش‌نمایش">
-                            <button onclick="removeImage()" class="remove-btn" title="حذف عکس">✕</button>
-                            <span style="position: absolute; bottom: -10px; left: 10px; background: #4299e1; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                                🖼️ آماده تحلیل
-                            </span>
+                            <img src="${e.target.result}" class="image-preview">
+                            <button class="remove-btn" onclick="removeImage()">✕</button>
                         </div>
                     `;
-                    
-                    // فعال کردن دکمه ارسال
-                    sendBtn.disabled = false;
                 };
                 reader.readAsDataURL(file);
             }
         });
-
-        // ============ حذف عکس ============
+        
         function removeImage() {
             currentImage = null;
-            document.getElementById('imagePreviewContainer').innerHTML = '';
+            document.getElementById('imagePreview').innerHTML = '';
             document.getElementById('imageInput').value = '';
-            sendBtn.disabled = false; // دکمه رو فعال نگه دار
         }
-
+        
         // ============ ارسال به سرور ============
         async function sendMessage() {
             if (!currentImage) {
-                addSystemMessage('❌ لطفاً ابتدا یک عکس آپلود کنید.');
+                addSystemMessage('❌ لطفاً ابتدا یک عکس آپلود کنید');
                 return;
             }
-
-            showLoading();
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('sendBtn').disabled = true;
             
             try {
-                console.log('📤 ارسال درخواست به:', `${SERVER_URL}/api/predict`);
-                
                 const response = await fetch(`${SERVER_URL}/api/predict`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        image: currentImage 
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: currentImage })
                 });
-
-                console.log('📥 وضعیت پاسخ:', response.status);
                 
                 const data = await response.json();
-                console.log('📦 داده دریافتی:', data);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sendBtn').disabled = false;
                 
-                hideLoading();
-                
-                if (response.ok && data.success) {
-                    // نمایش نتیجه
-                    showPredictionResult(data);
+                if (data.success) {
+                    showResult(data);
                 } else {
                     addSystemMessage(`❌ خطا: ${data.error || 'خطای ناشناخته'}`);
                 }
                 
             } catch (error) {
-                console.error('❌ خطا:', error);
-                hideLoading();
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('sendBtn').disabled = false;
                 addSystemMessage(`❌ خطا در ارتباط با سرور: ${error.message}`);
             }
         }
-
+        
         // ============ نمایش نتیجه ============
-        function showPredictionResult(data) {
-            let color = '#48bb78';
-            let icon = '✅';
+        function showResult(data) {
+            const chatBox = document.getElementById('chatBox');
             
-            if (data.class === 'crohn') {
-                color = '#ed8936';
-                icon = '⚠️';
-            } else if (data.class === 'ulcerative-colitis') {
-                color = '#e53e3e';
-                icon = '⚠️';
-            }
-            
-            const resultHTML = `
-                <div style="background: white; padding: 20px; border-radius: 15px; border-right: 5px solid ${color};">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <span style="font-size: 32px;">${icon}</span>
-                        <div>
-                            <div style="font-size: 24px; font-weight: 700; color: #2d3748;">
-                                ${data.class_fa}
-                            </div>
-                            <div style="font-size: 14px; color: #718096;">
-                                کد: ${data.class}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="background: #f8fafd; padding: 15px; border-radius: 10px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span style="color: #4a5568; font-weight: 600;">درصد اطمینان</span>
-                            <span style="color: ${color}; font-weight: 700; font-size: 18px;">
-                                ${data.confidence_percent}
-                            </span>
-                        </div>
-                        <div style="width: 100%; height: 10px; background: #edf2f7; border-radius: 5px;">
-                            <div style="width: ${data.confidence_percent}; height: 10px; background: ${color}; border-radius: 5px;"></div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 15px; padding: 15px; background: #ebf8ff; border-radius: 10px; color: #2c5282;">
-                        <span style="font-weight: 600;">💬 توضیح:</span>
-                        <p style="margin-top: 8px; line-height: 1.6;">${data.explanation}</p>
-                    </div>
-                    
-                    <div style="margin-top: 10px; font-size: 11px; color: #a0aec0; text-align: left;">
-                        مدل: ResNet50 | دقت: 91.2%
-                    </div>
-                </div>
-            `;
-            
-            // اضافه کردن پیام کاربر (عکس)
-            const userMessageDiv = document.createElement('div');
-            userMessageDiv.className = 'message user-message';
-            const timestamp = new Date().toLocaleTimeString('fa-IR');
-            userMessageDiv.innerHTML = `
+            // اضافه کردن عکس کاربر
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user-message';
+            userMsg.innerHTML = `
                 <div class="message-content" style="max-width: 300px; padding: 10px;">
-                    <img src="${currentImage}" style="width: 100%; border-radius: 10px;">
+                    <img src="${currentImage}" style="width: 100%; border-radius: 8px;">
                 </div>
-                <div class="timestamp">${timestamp}</div>
+                <div class="timestamp">${new Date().toLocaleTimeString('fa-IR')}</div>
             `;
-            chatBox.appendChild(userMessageDiv);
+            chatBox.appendChild(userMsg);
             
-            // اضافه کردن پاسخ بات
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.className = 'message bot-message';
-            botMessageDiv.innerHTML = `
+            // اضافه کردن پاسخ
+            let color = data.class === 'normal' ? '#48bb78' : '#f56565';
+            let icon = data.class === 'normal' ? '✅' : '⚠️';
+            
+            const botMsg = document.createElement('div');
+            botMsg.className = 'message bot-message';
+            botMsg.innerHTML = `
                 <div class="message-content">
-                    ${resultHTML}
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <span style="font-size: 24px;">${icon}</span>
+                        <span style="font-size: 20px; font-weight: bold; color: ${color};">${data.class_fa}</span>
+                    </div>
+                    
+                    <div style="background: #f8fafd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>درصد اطمینان</span>
+                            <span style="font-weight: bold; color: ${color};">${data.confidence_percent}</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px;">
+                            <div style="width: ${data.confidence_percent}; height: 8px; background: ${color}; border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #ebf8ff; padding: 15px; border-radius: 10px; border-right: 4px solid #4299e1;">
+                        <span style="font-weight: bold; color: #2c5282;">💬 پاسخ Llama 3.2:</span>
+                        <p style="margin-top: 8px; color: #2d3748;">${data.explanation}</p>
+                    </div>
+                    
+                    <div style="margin-top: 10px; font-size: 11px; color: #718096; display: flex; justify-content: space-between;">
+                        <span>🤖 مدل: ResNet50</span>
+                        <span>${data.llm_used ? '🟡 Llama فعال' : '⚪ جمله پیش‌فرض'}</span>
+                    </div>
                 </div>
-                <div class="timestamp">${timestamp}</div>
+                <div class="timestamp">${new Date().toLocaleTimeString('fa-IR')}</div>
             `;
-            chatBox.appendChild(botMessageDiv);
-            
-            scrollToBottom();
+            chatBox.appendChild(botMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-
-        // ============ نمایش/مخفی کردن لودینگ ============
-        function showLoading() {
-            loading.style.display = 'block';
-            sendBtn.disabled = true;
-            messageInput.disabled = true;
-        }
-
-        function hideLoading() {
-            loading.style.display = 'none';
-            sendBtn.disabled = false;
-            messageInput.disabled = false;
-        }
-
-        // ============ اسکرول به پایین ============
-        function scrollToBottom() {
-            chatBox.scrollTo({
-                top: chatBox.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-
-        // ============ تنظیم تایمستamp خوش آمدگویی ============
-        document.getElementById('welcomeTimestamp').innerText = 
-            new Date().toLocaleTimeString('fa-IR');
-
+        
         // ============ شروع ============
-        document.addEventListener('DOMContentLoaded', function() {
-            // تست اتصال به سرور
-            testServerConnection();
-            
-            // تست مدل با درخواست ساده
-            setTimeout(() => {
-                testModelWithSample();
-            }, 1000);
-            
-            // بررسی دوره‌ای اتصال هر 30 ثانیه
-            setInterval(testServerConnection, 30000);
-        });
+        document.getElementById('welcomeTime').innerText = new Date().toLocaleTimeString('fa-IR');
+        checkServer();
+        setInterval(checkServer, 30000);
     </script>
 </body>
 </html>
